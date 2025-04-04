@@ -1,4 +1,5 @@
 const Course = require("../models/CourseModel");
+const Lecture = require("../models/LectureModel");
 const { v4: uuidv4 } = require("uuid");
 
 const addCourse = async (req, res) => {
@@ -85,10 +86,39 @@ const deleteCourse = async (req, res) => {
   }
 };
 
+const getAllLectures = async (req, res) => {
+  try {
+    const { course_id } = req.params;
+    console.log(course_id);
+
+    // Validate course_id
+    if (!course_id) {
+      return res.status(400).json({ message: "Course ID is required!" });
+    }
+
+    // Fetch lectures for the given course_id
+    const lectures = await Lecture.find({ course_id });
+
+    // If no lectures are found
+    if (!lectures || lectures.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No lectures found for this course!" });
+    }
+
+    res.status(200).json(lectures);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
+  }
+};
+
 module.exports = {
   addCourse,
   getAllCourses,
   getCourseById,
   updateCourse,
   deleteCourse,
+  getAllLectures,
 };

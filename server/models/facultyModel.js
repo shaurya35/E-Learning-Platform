@@ -36,11 +36,11 @@ const facultySchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
-    teacher_course: {
+    faculty_courses: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Course",
       required: true,
-    }
+    },
   },
   { timestamps: true }
 );
