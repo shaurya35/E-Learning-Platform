@@ -2,25 +2,28 @@ const jwt = require("jsonwebtoken");
 const Admin = require("../models/adminModel");
 
 const verifyAdmin = async (req, res, next) => {
-    try {
-        const token = req.header("Authorization").replace("Bearer ", "");
-        if (!token) {
-            return res.status(401).json({ message: "Access Denied! No token provided." });
-        }
+  try {
+    const authHeader = req.header("Authorization");
 
-        // Verify token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const admin = await Admin.findOne({ admin_id: decoded.admin_id });
-
-        if (!admin) {
-            return res.status(403).json({ message: "Access Denied! Not an admin." });
-        }
-
-        req.admin = admin;
-        next();
-    } catch (error) {
-        res.status(401).json({ message: "Invalid Token!", error: error.message });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Access Denied! No valid token provided." });
     }
+
+    const token = authHeader.split(" ")[1]; // Extract token
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const admin = await Admin.findOne({ admin_id: decoded.admin_id });
+
+    if (!admin) {
+      return res.status(403).json({ message: "Access Denied! Not an admin." });
+    }
+
+    req.admin = admin;
+    next(); // Proceed to the next middleware/controller
+  } catch (error) {
+    res.status(401).json({ message: "Invalid Token!", error: error.message });
+  }
 };
 
 module.exports = { verifyAdmin };
