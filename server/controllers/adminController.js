@@ -1,7 +1,7 @@
 const Admin = require("../models/adminModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const Student = require("../models/studentModel");
+const Student = require("../models/StudentModel");
 const Faculty = require("../models/facultyModel");
 
 const generateAccessToken = (admin) => {

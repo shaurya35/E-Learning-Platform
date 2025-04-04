@@ -26,6 +26,12 @@ app.use(
 
 const adminRoutes = require("./routes/adminRoutes");
 const courseRoutes = require("./routes/courseRoutes");
+const studentRoutes = require("./routes/studentRoutes");
+const facultyRoutes = require("./routes/facultyRoutes");
+app.use("/api/admin", adminRoutes);
+app.use("/api/student", studentRoutes);
+app.use("/api/faculty", facultyRoutes);
+app.use("/api/course", courseRoutes);
 
 // base route
 app.get("/", (req, res) => {
