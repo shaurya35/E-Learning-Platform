@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const Admin = require("../models/adminModel");
 const Student = require("../models/StudentModel");
+const Faculty = require("../models/facultyModel");
 
 const verifyAdmin = async (req, res, next) => {
   try {
@@ -57,4 +58,34 @@ const verifyStudent = async (req, res, next) => {
   }
 };
 
-module.exports = { verifyAdmin, verifyStudent };
+const checkRole = async (req, res, next) => {
+  try {
+    // Extract token from Authorization header
+    const authHeader = req.header("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res
+        .status(401)
+        .json({ message: "Access denied. No valid token provided." });
+    }
+
+    const token = authHeader.split(" ")[1]; // Extract token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify token
+
+    // Check if the role is faculty or admin
+    if (decoded.role === "faculty" || decoded.role === "admin") {
+      req.user = decoded; // Attach user info to request
+      req.role = decoded.role; // Store role
+      return next(); // Allow access
+    }
+
+    return res
+      .status(403)
+      .json({ message: "Access denied. Only Faculty or Admin allowed." });
+  } catch (error) {
+    return res
+      .status(401)
+      .json({ message: "Invalid token.", error: error.message });
+  }
+};
+
+module.exports = { verifyAdmin, verifyStudent, checkRole };

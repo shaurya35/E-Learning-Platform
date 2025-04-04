@@ -7,7 +7,7 @@ const app = express();
 app.use(express.json());
 
 // CORS
-const allowedOrigins = ["http://localhost:5173"];
+const allowedOrigins = ["http://localhost:3000"];
 
 app.use(
   cors({
@@ -28,10 +28,13 @@ const adminRoutes = require("./routes/adminRoutes");
 const courseRoutes = require("./routes/courseRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const facultyRoutes = require("./routes/facultyRoutes");
+const assignmentRoutes = require("./routes/assignmentRoutes");
+
 app.use("/api/admin", adminRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/course", courseRoutes);
+app.use("/api/assignments", assignmentRoutes);
 
 // base route
 app.get("/", (req, res) => {

@@ -27,7 +27,6 @@ const addCourse = async (req, res) => {
   }
 };
 
-// Get all courses
 const getAllCourses = async (req, res) => {
   try {
     const courses = await Course.find().populate(
@@ -39,7 +38,6 @@ const getAllCourses = async (req, res) => {
   }
 };
 
-// Get course by ID
 const getCourseById = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id).populate(
@@ -53,7 +51,6 @@ const getCourseById = async (req, res) => {
   }
 };
 
-// Update course
 const updateCourse = async (req, res) => {
   try {
     const updatedCourse = await Course.findByIdAndUpdate(
@@ -72,7 +69,6 @@ const updateCourse = async (req, res) => {
   }
 };
 
-// Delete course
 const deleteCourse = async (req, res) => {
   try {
     const deletedCourse = await Course.findByIdAndDelete(req.params.id);
@@ -85,7 +81,6 @@ const deleteCourse = async (req, res) => {
   }
 };
 
-// Export all controllers
 module.exports = {
   addCourse,
   getAllCourses,

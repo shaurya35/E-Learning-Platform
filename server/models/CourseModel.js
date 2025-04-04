@@ -5,7 +5,7 @@ const courseSchema = new mongoose.Schema(
   {
     course_id: {
       type: String,
-      default: uuidv4, // Automatically generates a unique UUID
+      default: uuidv4, // Generates a unique UUID automatically
       unique: true,
     },
     course_name: {
@@ -52,9 +52,7 @@ const courseSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-courseSchema.pre("save", function (next) {
-  this.updated_at = Date.now();
-  next();
-});
+// ✅ Prevents OverwriteModelError
+const Course = mongoose.models.Course || mongoose.model("Course", courseSchema);
 
-module.exports = mongoose.model("Course", courseSchema);
+module.exports = Course;
