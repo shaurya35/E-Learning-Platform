@@ -35,6 +35,7 @@ app.use("/api/student", studentRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/course", courseRoutes);
 app.use("/api/assignments", assignmentRoutes);
+app.use("/api/admin", adminRoutes);
 
 // base route
 app.get("/", (req, res) => {
@@ -42,8 +43,7 @@ app.get("/", (req, res) => {
 });
 
 // routes import
-app.use("/api/admin", adminRoutes);
-app.use("/api/courses", courseRoutes);
+
 
 // use routes
 
