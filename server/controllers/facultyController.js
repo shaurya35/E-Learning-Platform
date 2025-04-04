@@ -25,6 +25,7 @@ const generateFacultyRefreshToken = (faculty) => {
     { expiresIn: "30d" }
   );
 };
+
 const facultySignIn = async (req, res) => {
   try {
     const { faculty_uid, faculty_password } = req.body;
@@ -111,6 +112,7 @@ const getFacultyProfile = async (req, res) => {
     });
   }
 };
+
 const facultyRefreshAccessToken = (req, res) => {
   const refreshToken = req.cookies.refreshToken;
 
@@ -139,9 +141,25 @@ const facultyRefreshAccessToken = (req, res) => {
   }
 };
 
-// Add to exports
+const facultyLogout = (req, res) => {
+  try {
+    // Clear the refresh token cookie
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "Strict",
+    });
+
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ message: "Error during logout", error: error.message });
+  }
+};
+
 module.exports = { 
   facultySignIn, 
   getFacultyProfile,
-  facultyRefreshAccessToken 
+  facultyRefreshAccessToken,
+  facultyLogout
 };

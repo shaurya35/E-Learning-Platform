@@ -239,7 +239,21 @@ const addTeacher = async (req, res) => {
       .json({ message: "Error adding faculty!", error: error.message });
   }
 };
+const logout = (req, res) => {
+  try {
+    // Clear the refresh token cookie
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "Strict",
+    });
 
+    res.status(200).json({ message: "Logout successful!" });
+  } catch (error) {
+    console.error("Logout Error:", error);
+    res.status(500).json({ message: "Error logging out!", error: error.message });
+  }
+};
 module.exports = {
   signup,
   signin,
@@ -247,4 +261,5 @@ module.exports = {
   addTeacher,
   refreshAccessToken,
   adminProfile,
+  logout,
 };
