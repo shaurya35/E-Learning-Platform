@@ -25,7 +25,7 @@ export function ThemeProvider({ children }) {
   };
 
   if (isDarkMode === null) {
-    return null;
+    return null; 
   }
 
   return (

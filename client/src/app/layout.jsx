@@ -1,8 +1,9 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthProvider";
 import { ProfileProvider } from "@/contexts/ProfileContext";
+import Navbar from "@/components/main/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,6 +15,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+});
+
+
 export const metadata = {
   title: "E-Learning",
   description: "Transforming Education with Technology",
@@ -21,13 +28,18 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="!scroll-smooth">
+    <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen overflow-x-hidden`}
+        className={`${poppins.className} ${geistSans.variable} ${geistMono.variable} antialiased min-h-screen overflow-x-hidden `}
       >
         <ThemeProvider>
           <AuthProvider>
-            <ProfileProvider>{children}</ProfileProvider>
+            <ProfileProvider>
+              <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+                <Navbar /> 
+                {children}
+              </div>
+            </ProfileProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

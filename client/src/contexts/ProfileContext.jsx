@@ -16,8 +16,9 @@ export const ProfileProvider = ({ children }) => {
     if (user && accessToken) {
       const fetchProfile = async () => {
         setLoading(true);
+        console.log(user);
         try {
-          const response = await axios.get(`${BACKEND_URL}/api/profile`, {
+          const response = await axios.get(`${BACKEND_URL}/api/${user.role}/profile`, {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
