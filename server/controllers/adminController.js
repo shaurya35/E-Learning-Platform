@@ -239,6 +239,7 @@ const addTeacher = async (req, res) => {
       .json({ message: "Error adding faculty!", error: error.message });
   }
 };
+
 const logout = (req, res) => {
   try {
     // Clear the refresh token cookie
@@ -251,9 +252,12 @@ const logout = (req, res) => {
     res.status(200).json({ message: "Logout successful!" });
   } catch (error) {
     console.error("Logout Error:", error);
-    res.status(500).json({ message: "Error logging out!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error logging out!", error: error.message });
   }
 };
+
 module.exports = {
   signup,
   signin,

@@ -2,9 +2,13 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const cookieParser = require("cookie-parser"); // ✅ add this
+
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser()); // ✅ use it before your routes
+
 
 // --- CORS config ---
 const allowedOrigins = [
