@@ -1,11 +1,10 @@
 const mongoose = require("mongoose");
-const { v4: uuidv4 } = require("uuid");
 
-const courseSchema = new mongoose.Schema(
+const CourseSchema = new mongoose.Schema(
   {
     course_id: {
       type: String,
-      default: uuidv4, // Generates a unique UUID automatically
+      required: true,
       unique: true,
     },
     course_name: {
@@ -23,6 +22,13 @@ const courseSchema = new mongoose.Schema(
     course_semester: {
       type: String,
       required: true,
+    },
+    uploaded_by: {
+      user_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Faculty", 
+        required: true,
+      },
     },
     course_lecture: [
       {
@@ -53,6 +59,6 @@ const courseSchema = new mongoose.Schema(
 );
 
 // ✅ Prevents OverwriteModelError
-const Course = mongoose.models.Course || mongoose.model("Course", courseSchema);
+const Course = mongoose.models.Course || mongoose.model("Course", CourseSchema);
 
 module.exports = Course;

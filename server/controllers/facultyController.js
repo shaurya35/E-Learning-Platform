@@ -25,6 +25,7 @@ const generateFacultyRefreshToken = (faculty) => {
     { expiresIn: "30d" }
   );
 };
+
 const facultySignIn = async (req, res) => {
   try {
     const { faculty_uid, faculty_password } = req.body;
@@ -112,5 +113,53 @@ const getFacultyProfile = async (req, res) => {
   }
 };
 
-// Don't forget to export the new function
-module.exports = { facultySignIn, getFacultyProfile };
+const facultyRefreshAccessToken = (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Refresh token missing" });
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const newAccessToken = generateFacultyAccessToken({
+      faculty_id: decoded.faculty_id,
+      faculty_uid: decoded.faculty_uid,
+      role: decoded.role,
+    });
+
+    res.status(200).json({
+      accessToken: newAccessToken,
+      user: {
+        faculty_uid: decoded.faculty_uid,
+        faculty_id: decoded.faculty_id,
+        role: decoded.role,
+      },
+    });
+  } catch (error) {
+    res.status(401).json({ message: "Invalid or expired refresh token" });
+  }
+};
+
+const facultyLogout = (req, res) => {
+  try {
+    // Clear the refresh token cookie
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "Strict",
+    });
+
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ message: "Error during logout", error: error.message });
+  }
+};
+
+module.exports = { 
+  facultySignIn, 
+  getFacultyProfile,
+  facultyRefreshAccessToken,
+  facultyLogout
+};

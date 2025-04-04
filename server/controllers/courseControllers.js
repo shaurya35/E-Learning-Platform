@@ -1,9 +1,15 @@
 const Course = require("../models/CourseModel");
-const Lecture = require("../models/LectureModel");
 const { v4: uuidv4 } = require("uuid");
 
 const addCourse = async (req, res) => {
   try {
+    // Ensure only faculty members can add courses
+    if (!req.faculty) {
+      return res
+        .status(403)
+        .json({ error: "Only faculty members can add courses." });
+    }
+
     const {
       course_name,
       course_description,
@@ -11,18 +17,24 @@ const addCourse = async (req, res) => {
       course_semester,
     } = req.body;
 
+    if (!req.faculty._id) {
+      return res.status(400).json({ error: "Faculty ID is missing" });
+    }
+
     const newCourse = new Course({
-      course_id: uuidv4(), // ✅ Generates a unique ID
+      course_id: uuidv4(),
       course_name,
       course_description,
       course_department,
       course_semester,
+      uploaded_by: { user_id: req.faculty._id }, // Corrected from req.user._id
     });
 
     await newCourse.save();
-    res
-      .status(201)
-      .json({ message: "Course added successfully!", course: newCourse });
+    res.status(201).json({
+      message: "Course added successfully!",
+      course: newCourse,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -33,8 +45,9 @@ const getAllCourses = async (req, res) => {
     const courses = await Course.find()
       .select(
         "-course_lecture -course_assignment -course_quiz -course_notification"
-      ) // Exclude unwanted fields
-      .sort({ createdAt: -1 }); // Sort by latest created courses first
+      )
+      .populate("uploaded_by.user_id", "name email") // Populate user details
+      .sort({ createdAt: -1 });
 
     res.status(200).json(courses);
   } catch (error) {
@@ -44,9 +57,11 @@ const getAllCourses = async (req, res) => {
 
 const getCourseById = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id).select(
-      "-course_lecture -course_assignment -course_quiz -course_notification"
-    ); // Exclude unwanted fields
+    const course = await Course.findById(req.params.id)
+      .select(
+        "-course_lecture -course_assignment -course_quiz -course_notification"
+      )
+      .populate("uploaded_by.user_id", "name email"); // Populate user details
 
     if (!course) return res.status(404).json({ message: "Course not found!" });
 
@@ -86,13 +101,11 @@ const deleteCourse = async (req, res) => {
   }
 };
 
-//jiska hai vahi dekh ske 
+//jiska hai vahi dekh ske
 const getAllLectures = async (req, res) => {
   try {
     const { course_id } = req.params;
-    const student_id = req.user.id; // Assuming `req.user` contains student details after authentication
-
-    console.log(`Course ID: ${course_id}, Student ID: ${student_id}`);
+    const student_id = req.user.id; // Assuming req.user contains student details after authentication
 
     // Validate inputs
     if (!course_id) {
@@ -130,7 +143,6 @@ const getAllLectures = async (req, res) => {
       .json({ message: "Internal Server Error", error: error.message });
   }
 };
-
 
 module.exports = {
   addCourse,
