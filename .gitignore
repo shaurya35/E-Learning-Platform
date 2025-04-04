@@ -24,29 +24,3 @@
 /server/bun.lockb
 /server/.env
 /server/package-lock.json
-
-# client logs
-/client/logs
-/client/*.log
-/client/npm-debug.log*
-/client/yarn-debug.log*
-/client/yarn-error.log*
-/client/pnpm-debug.log*
-/client/lerna-debug.log*
-/client/node_modules
-/client/dist
-/client/dist-ssr
-/client/*.local
-# client Editor directories and files
-/client/.vscode/*
-/client/!.vscode/extensions.json
-/client/.idea
-/client/.DS_Store
-/client/*.suo
-/client/*.ntvs*
-/client/*.njsproj
-/client/*.sln
-/client/*.sw?
-/client/bun.lockb
-/client/.env
-/client/package-lock.json
