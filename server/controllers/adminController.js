@@ -178,6 +178,25 @@ const addStudent = async (req, res) => {
   }
 };
 
+const adminProfile = async (req, res) => {
+  try {
+    const admin = await Admin.findOne({ admin_id: req.admin.admin_id }).select(
+      "-admin_password"
+    ); // Exclude password
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Admin details retrieved successfully", admin });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching admin details", error: error.message });
+  }
+};
+
 const addTeacher = async (req, res) => {
   try {
     const {
@@ -220,4 +239,11 @@ const addTeacher = async (req, res) => {
   }
 };
 
-module.exports = { signup, signin, addStudent, addTeacher, refreshAccessToken };
+module.exports = {
+  signup,
+  signin,
+  addStudent,
+  addTeacher,
+  refreshAccessToken,
+  adminProfile,
+};

@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -24,9 +24,8 @@ app.use(
   })
 );
 
-const adminRoutes = require("./routes/adminRoutes")
-app.use("/api/admin", adminRoutes);
-
+const adminRoutes = require("./routes/adminRoutes");
+const courseRoutes = require("./routes/courseRoutes");
 
 // base route
 app.get("/", (req, res) => {
@@ -34,15 +33,10 @@ app.get("/", (req, res) => {
 });
 
 // routes import
-
-
-
+app.use("/api/admin", adminRoutes);
+app.use("/api/courses", courseRoutes);
 
 // use routes
-
-
-
-
 
 // connection and start
 mongoose.connect(process.env.MONGO_URI).then(() => {
