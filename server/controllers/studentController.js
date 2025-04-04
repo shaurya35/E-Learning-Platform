@@ -1,7 +1,9 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const Student = require("../models/StudentModel"); 
+const Student = require("../models/StudentModel");
+const Course = require("../models/CourseModel");
 
+// Token generation functions
 const generateStudentAccessToken = (student) => {
   return jwt.sign(
     {
@@ -26,28 +28,24 @@ const generateStudentRefreshToken = (student) => {
   );
 };
 
+// Student Sign In
 const studentSignIn = async (req, res) => {
   try {
     const { student_uid, student_password } = req.body;
 
-    // 🔍 Check if student exists
     const student = await Student.findOne({ student_uid });
     if (!student) {
       return res.status(400).json({ message: "Student not found!" });
     }
 
-    // 🔐 Verify password
     const isMatch = await bcrypt.compare(student_password, student.student_password);
-    console.log(student_password)
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid UID or password!" });
     }
 
-    // 🔑 Generate tokens
     const accessToken = generateStudentAccessToken(student);
     const refreshToken = generateStudentRefreshToken(student);
 
-    // 🍪 Store refresh token in cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -55,7 +53,6 @@ const studentSignIn = async (req, res) => {
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
-    // ✅ Success response
     res.status(200).json({
       message: "Student signin successful!",
       accessToken,
@@ -71,40 +68,142 @@ const studentSignIn = async (req, res) => {
     res.status(500).json({ message: "Error signing in student!", error: error.message });
   }
 };
+
+// Get Student Profile
 const getStudentProfile = async (req, res) => {
-    try {
-      // The student ID is attached to the request by the verifyStudent middleware
-      const studentId = req.student_id;
-  
-      // Find the student in the database, excluding the password
-      const student = await Student.findById(studentId)
-        .select('-student_password') // Exclude password
-        .populate('student_enrolled_courses', 'course_code course_name'); // Populate enrolled courses with basic info
-  
-      if (!student) {
-        return res.status(404).json({ message: "Student not found" });
-      }
-  
-      // Return the student profile
-      res.status(200).json({
-        message: "Student profile retrieved successfully",
-        profile: {
-          student_uid: student.student_uid,
-          student_name: student.student_name,
-          student_email: student.student_email,
-          student_department: student.student_department,
-          student_degree: student.student_degree,
-          student_semester: student.student_semester,
-          student_enrolled_courses: student.student_enrolled_courses,
-          createdAt: student.createdAt,
-          updatedAt: student.updatedAt
-        }
-      });
-  
-    } catch (error) {
-      console.error("Error fetching student profile:", error);
-      res.status(500).json({ message: "Error fetching student profile", error: error.message });
+  try {
+    const studentId = req.student_id;
+
+    const student = await Student.findById(studentId)
+      .select('-student_password')
+      .populate('student_enrolled_courses', 'course_id course_name course_description course_department course_semester');
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
     }
-  };
-  
-module.exports = { studentSignIn , getStudentProfile };
+
+    res.status(200).json({
+      message: "Student profile retrieved successfully",
+      profile: {
+        student_uid: student.student_uid,
+        student_name: student.student_name,
+        student_email: student.student_email,
+        student_department: student.student_department,
+        student_degree: student.student_degree,
+        student_semester: student.student_semester,
+        student_enrolled_courses: student.student_enrolled_courses,
+        createdAt: student.createdAt,
+        updatedAt: student.updatedAt
+      }
+    });
+
+  } catch (error) {
+    console.error("Error fetching student profile:", error);
+    res.status(500).json({ message: "Error fetching student profile", error: error.message });
+  }
+};
+
+// Enroll in a Course
+const enrollInCourse = async (req, res) => {
+  try {
+    const { course_id } = req.body;
+    const studentId = req.student_id;
+
+    // Check if course exists
+    const course = await Course.findById(course_id);
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    // Check if student is already enrolled
+    const student = await Student.findById(studentId);
+    if (student.student_enrolled_courses.includes(course_id)) {
+      return res.status(400).json({ message: "Already enrolled in this course" });
+    }
+
+    // Add course to student's enrolled courses
+    const updatedStudent = await Student.findByIdAndUpdate(
+      studentId,
+      { $addToSet: { student_enrolled_courses: course_id } },
+      { new: true }
+    ).populate('student_enrolled_courses', 'course_id course_name course_description');
+
+    // Add student to course's enrolled students (if your Course model has this field)
+    await Course.findByIdAndUpdate(
+      course_id,
+      { $addToSet: { enrolled_students: studentId } },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: "Successfully enrolled in course",
+      enrolled_courses: updatedStudent.student_enrolled_courses
+    });
+
+  } catch (error) {
+    console.error("Enrollment Error:", error);
+    res.status(500).json({ message: "Error enrolling in course", error: error.message });
+  }
+};
+
+// Unenroll from a Course
+const unenrollFromCourse = async (req, res) => {
+  try {
+    const { course_id } = req.body;
+    const studentId = req.student_id;
+
+    // Remove course from student's enrolled courses
+    const updatedStudent = await Student.findByIdAndUpdate(
+      studentId,
+      { $pull: { student_enrolled_courses: course_id } },
+      { new: true }
+    ).populate('student_enrolled_courses', 'course_id course_name course_description');
+
+    // Remove student from course's enrolled students (if your Course model has this field)
+    await Course.findByIdAndUpdate(
+      course_id,
+      { $pull: { enrolled_students: studentId } },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: "Successfully unenrolled from course",
+      enrolled_courses: updatedStudent.student_enrolled_courses
+    });
+
+  } catch (error) {
+    console.error("Unenrollment Error:", error);
+    res.status(500).json({ message: "Error unenrolling from course", error: error.message });
+  }
+};
+
+// Get Enrolled Courses
+const getEnrolledCourses = async (req, res) => {
+  try {
+    const studentId = req.student_id;
+
+    const student = await Student.findById(studentId)
+      .populate('student_enrolled_courses', 'course_id course_name course_description course_department course_semester');
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    res.status(200).json({
+      message: "Enrolled courses retrieved successfully",
+      enrolled_courses: student.student_enrolled_courses
+    });
+
+  } catch (error) {
+    console.error("Error fetching enrolled courses:", error);
+    res.status(500).json({ message: "Error fetching enrolled courses", error: error.message });
+  }
+};
+
+module.exports = {
+  studentSignIn,
+  getStudentProfile,
+  enrollInCourse,
+  unenrollFromCourse,
+  getEnrolledCourses
+};
