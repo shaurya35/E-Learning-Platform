@@ -220,11 +220,40 @@ const getEnrolledCourses = async (req, res) => {
       });
   }
 };
+const studentRefreshAccessToken = (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
 
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Refresh token missing" });
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const newAccessToken = generateStudentAccessToken({
+      student_id: decoded.student_id,
+      student_uid: decoded.student_uid,
+      role: decoded.role,
+    });
+
+    res.status(200).json({
+      accessToken: newAccessToken,
+      user: {
+        student_uid: decoded.student_uid,
+        student_id: decoded.student_id,
+        role: decoded.role,
+      },
+    });
+  } catch (error) {
+    res.status(401).json({ message: "Invalid or expired refresh token" });
+  }
+};
+
+// Update exports
 module.exports = {
   studentSignIn,
   getStudentProfile,
   enrollInCourse,
   unenrollFromCourse,
   getEnrolledCourses,
+  studentRefreshAccessToken,
 };

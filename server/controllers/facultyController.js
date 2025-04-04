@@ -111,6 +111,37 @@ const getFacultyProfile = async (req, res) => {
     });
   }
 };
+const facultyRefreshAccessToken = (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
 
-// Don't forget to export the new function
-module.exports = { facultySignIn, getFacultyProfile };
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Refresh token missing" });
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const newAccessToken = generateFacultyAccessToken({
+      faculty_id: decoded.faculty_id,
+      faculty_uid: decoded.faculty_uid,
+      role: decoded.role,
+    });
+
+    res.status(200).json({
+      accessToken: newAccessToken,
+      user: {
+        faculty_uid: decoded.faculty_uid,
+        faculty_id: decoded.faculty_id,
+        role: decoded.role,
+      },
+    });
+  } catch (error) {
+    res.status(401).json({ message: "Invalid or expired refresh token" });
+  }
+};
+
+// Add to exports
+module.exports = { 
+  facultySignIn, 
+  getFacultyProfile,
+  facultyRefreshAccessToken 
+};
