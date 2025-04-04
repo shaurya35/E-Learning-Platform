@@ -71,5 +71,40 @@ const studentSignIn = async (req, res) => {
     res.status(500).json({ message: "Error signing in student!", error: error.message });
   }
 };
-
-module.exports = { studentSignIn };
+const getStudentProfile = async (req, res) => {
+    try {
+      // The student ID is attached to the request by the verifyStudent middleware
+      const studentId = req.student_id;
+  
+      // Find the student in the database, excluding the password
+      const student = await Student.findById(studentId)
+        .select('-student_password') // Exclude password
+        .populate('student_enrolled_courses', 'course_code course_name'); // Populate enrolled courses with basic info
+  
+      if (!student) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+  
+      // Return the student profile
+      res.status(200).json({
+        message: "Student profile retrieved successfully",
+        profile: {
+          student_uid: student.student_uid,
+          student_name: student.student_name,
+          student_email: student.student_email,
+          student_department: student.student_department,
+          student_degree: student.student_degree,
+          student_semester: student.student_semester,
+          student_enrolled_courses: student.student_enrolled_courses,
+          createdAt: student.createdAt,
+          updatedAt: student.updatedAt
+        }
+      });
+  
+    } catch (error) {
+      console.error("Error fetching student profile:", error);
+      res.status(500).json({ message: "Error fetching student profile", error: error.message });
+    }
+  };
+  
+module.exports = { studentSignIn , getStudentProfile };

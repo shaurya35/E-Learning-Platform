@@ -2,11 +2,11 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const Faculty = require("../models/facultyModel");
 
-const generateFacultyAccessToken = (student) => {
+const generateFacultyAccessToken = (faculty) => {
     return jwt.sign(
       {
-        faculty_id: Faculty._id,
-        faculty_uid: Faculty.faculty_uid,
+        faculty_id: faculty._id,
+        faculty_uid: faculty.faculty_uid,
         role: "faculty",
       },
       process.env.JWT_SECRET,
@@ -17,8 +17,8 @@ const generateFacultyAccessToken = (student) => {
   const generateFacultyRefreshToken = (faculty) => {
     return jwt.sign(
       {
-        faculty_id: Faculty._id,
-        faculty_uid: Faculty.faculty_uid,
+        faculty_id: faculty._id,
+        faculty_uid: faculty.faculty_uid,
         role: "faculty",
       },
       process.env.JWT_REFRESH_SECRET,
@@ -70,4 +70,46 @@ const facultySignIn = async (req, res) => {
   }
 };
 
-module.exports = { facultySignIn };
+const getFacultyProfile = async (req, res) => {
+    try {
+      // The faculty ID is attached to the request by the verifyFaculty middleware
+      const facultyId = req.faculty_id;
+  
+      // Find the faculty in the database, excluding the password and populating courses
+      const faculty = await Faculty.findById(facultyId)
+        .select('-faculty_password') // Exclude password
+        .populate('teacher_course', 'course_code course_name credits'); // Populate course details
+  
+      if (!faculty) {
+        return res.status(404).json({ message: "Faculty not found" });
+      }
+  
+      // Return the faculty profile
+      res.status(200).json({
+        message: "Faculty profile retrieved successfully",
+        profile: {
+          faculty_uid: faculty.faculty_uid,
+          faculty_name: faculty.faculty_name,
+          faculty_email: faculty.faculty_email,
+          faculty_department: faculty.faculty_department,
+          faculty_qualifications: faculty.faculty_qualifications,
+          faculty_phone: faculty.faculty_phone,
+          faculty_dob: faculty.faculty_dob,
+          teacher_course: faculty.teacher_course,
+          createdAt: faculty.createdAt,
+          updatedAt: faculty.updatedAt
+        }
+      });
+  
+    } catch (error) {
+      console.error("Error fetching faculty profile:", error);
+      res.status(500).json({ 
+        message: "Error fetching faculty profile", 
+        error: error.message 
+      });
+    }
+  };
+  
+  // Don't forget to export the new function
+  module.exports = { facultySignIn, getFacultyProfile };
+

@@ -32,7 +32,6 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/course", courseRoutes);
-
 // base route
 app.get("/", (req, res) => {
   res.json({ message: "OK" });

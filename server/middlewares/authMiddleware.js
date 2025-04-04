@@ -29,32 +29,58 @@ const verifyAdmin = async (req, res, next) => {
   }
 };
 
-const verifyStudent = async (req, res, next) => {
-  try {
-    const authHeader = req.header("Authorization");
+const verifyStudent = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res
-        .status(401)
-        .json({ message: "Access Denied! No valid token provided." });
-    }
-
-    const token = authHeader.split(" ")[1];
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const student = await Student.findOne({ _id: decoded.student_id });
-
-    if (!student) {
-      return res
-        .status(403)
-        .json({ message: "Access Denied! Not a valid student." });
-    }
-
-    req.student = student;
-    next();
-  } catch (error) {
-    res.status(401).json({ message: "Invalid Token!", error: error.message });
+  if (!token) {
+    return res.status(401).json({ message: 'Access token not provided' });
   }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: 'Invalid or expired token' });
+    }
+
+    // Verify the role is student
+    if (decoded.role !== 'student') {
+      return res.status(403).json({ message: 'Access forbidden - student role required' });
+    }
+
+    // Attach student information to the request
+    req.student_id = decoded.student_id;
+    req.student_uid = decoded.student_uid;
+    req.role = decoded.role;
+    
+    next();
+  });
 };
 
-module.exports = { verifyAdmin, verifyStudent };
+const verifyFaculty = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+  if (!token) {
+    return res.status(401).json({ message: 'Access token not provided' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: 'Invalid or expired token' });
+    }
+
+    // Verify the role is faculty
+    if (decoded.role !== 'faculty') {
+      return res.status(403).json({ message: 'Access forbidden - faculty role required' });
+    }
+
+    // Attach faculty information to the request
+    req.faculty_id = decoded.faculty_id;
+    req.faculty_uid = decoded.faculty_uid;
+    req.role = decoded.role;
+    
+    next();
+  });
+};
+
+module.exports = { verifyAdmin, verifyStudent ,verifyFaculty};
