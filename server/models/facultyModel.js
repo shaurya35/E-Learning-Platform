@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const facultySchema = new mongoose.Schema(
   {
-    faculty_id: {
+    faculty_uid: {
       type: String,
       required: true,
     },
