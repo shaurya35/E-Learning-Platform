@@ -6,23 +6,34 @@ const cors = require("cors");
 const app = express();
 app.use(express.json());
 
-// CORS
-const allowedOrigins = ["http://localhost:3000"];
+// --- CORS config ---
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://itersocialconnect.vercel.app",
+  "https://itersocialconnect.vercel.app",
+];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.error(`Blocked by CORS: ${origin}`);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    methods: "GET,POST,PUT,DELETE",
-    allowedHeaders: "Content-Type, Authorization",
-  })
-);
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.error(`Blocked by CORS: ${origin}`);
+      callback(new Error(f`Origin ${origin} not allowed by CORS`));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
 
 const adminRoutes = require("./routes/adminRoutes");
 const courseRoutes = require("./routes/courseRoutes");
