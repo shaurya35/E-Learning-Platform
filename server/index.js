@@ -40,6 +40,7 @@ const courseRoutes = require("./routes/courseRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const facultyRoutes = require("./routes/facultyRoutes");
 const assignmentRoutes = require("./routes/assignmentRoutes");
+const notification = require("./routes/notificationRoute");
 
 app.use("/api/admin", adminRoutes);
 app.use("/api/student", studentRoutes);
@@ -47,6 +48,8 @@ app.use("/api/faculty", facultyRoutes);
 app.use("/api/course", courseRoutes);
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/notification", notification);
+
 
 // base route
 app.get("/", (req, res) => {

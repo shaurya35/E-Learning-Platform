@@ -26,11 +26,7 @@ const CourseSchema = new mongoose.Schema(
     uploaded_by: {
       user_id: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true,
-      },
-      user_type: {
-        type: String,
-        enum: ["admin", "faculty"],
+        ref: "Faculty", 
         required: true,
       },
     },

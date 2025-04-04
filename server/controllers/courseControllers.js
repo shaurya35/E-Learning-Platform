@@ -3,6 +3,13 @@ const { v4: uuidv4 } = require("uuid");
 
 const addCourse = async (req, res) => {
   try {
+    // Ensure only faculty members can add courses
+    if (!req.faculty) {
+      return res
+        .status(403)
+        .json({ error: "Only faculty members can add courses." });
+    }
+
     const {
       course_name,
       course_description,
@@ -10,11 +17,9 @@ const addCourse = async (req, res) => {
       course_semester,
     } = req.body;
 
-    // Get user info from the request (assuming you have authentication middleware)
-    const uploaded_by = {
-      user_id: req.user._id, // The authenticated user's ID
-      user_type: req.user.role, // Assuming your user model has a 'role' field
-    };
+    if (!req.faculty._id) {
+      return res.status(400).json({ error: "Faculty ID is missing" });
+    }
 
     const newCourse = new Course({
       course_id: uuidv4(),
@@ -22,7 +27,7 @@ const addCourse = async (req, res) => {
       course_description,
       course_department,
       course_semester,
-      uploaded_by, // Add the uploader information
+      uploaded_by: { user_id: req.faculty._id }, // Corrected from req.user._id
     });
 
     await newCourse.save();

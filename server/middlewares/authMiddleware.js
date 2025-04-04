@@ -89,33 +89,33 @@ const checkRole = async (req, res, next) => {
   }
 };
 
-const verifyFaculty = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
+const verifyFaculty = async (req, res, next) => {
+  try {
+    const authHeader = req.header("Authorization");
 
-  if (!token) {
-    return res.status(401).json({ message: "Access token not provided" });
-  }
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(403).json({ message: "Invalid or expired token" });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res
+        .status(401)
+        .json({ message: "Access Denied! No valid token provided." });
     }
 
-    // Verify the role is faculty
-    if (decoded.role !== "faculty") {
+    const token = authHeader.split(" ")[1]; // Extract token
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const faculty = await Faculty.findOne({ faculty_uid: decoded.faculty_uid });
+
+    if (!faculty) {
       return res
         .status(403)
-        .json({ message: "Access forbidden - faculty role required" });
+        .json({ message: "Access Denied! Not a faculty member." });
     }
 
-    // Attach faculty information to the request
-    req.faculty_id = decoded.faculty_id;
-    req.faculty_uid = decoded.faculty_uid;
-    req.role = decoded.role;
-
-    next();
-  });
+    req.faculty = faculty; // Attach faculty object to request
+    next(); // Proceed to the next middleware/controller
+  } catch (error) {
+    res.status(401).json({ message: "Invalid Token!", error: error.message });
+  }
 };
 
 module.exports = { verifyAdmin, verifyStudent, verifyFaculty, checkRole };

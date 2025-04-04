@@ -25,6 +25,7 @@ const generateFacultyRefreshToken = (faculty) => {
     { expiresIn: "30d" }
   );
 };
+
 const facultySignIn = async (req, res) => {
   try {
     const { faculty_uid, faculty_password } = req.body;
