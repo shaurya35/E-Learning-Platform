@@ -248,6 +248,25 @@ const studentRefreshAccessToken = (req, res) => {
   }
 };
 
+const studentLogout = (req, res) => {
+  try {
+    // Clear the refresh token cookie
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "Strict",
+    });
+
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ 
+      message: "Error during logout", 
+      error: error.message 
+    });
+  }
+};
+
 // Update exports
 module.exports = {
   studentSignIn,
@@ -256,4 +275,5 @@ module.exports = {
   unenrollFromCourse,
   getEnrolledCourses,
   studentRefreshAccessToken,
+  studentLogout
 };

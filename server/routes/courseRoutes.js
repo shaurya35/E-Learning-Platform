@@ -13,11 +13,11 @@ const router = express.Router();
 const { verifyAdmin,verifyFaculty ,checkRole} = require("../middlewares/authMiddleware");
 
 // Routes
-router.post("/add", checkRole, addCourse);
+router.post("/add", verifyFaculty, addCourse);
 router.get("/", getAllCourses);
 router.get("/:id", getCourseById);
-router.put("/:id", checkRole, updateCourse);
-router.delete("/:id", checkRole, deleteCourse);
+router.put("/:id", verifyFaculty, updateCourse);
+router.delete("/:id", verifyFaculty, deleteCourse);
 router.get("/getAllLectures/:course_id", getAllLectures);
 
 module.exports = router;
