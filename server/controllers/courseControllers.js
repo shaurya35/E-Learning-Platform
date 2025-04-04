@@ -86,17 +86,34 @@ const deleteCourse = async (req, res) => {
   }
 };
 
+//jiska hai vahi dekh ske 
 const getAllLectures = async (req, res) => {
   try {
     const { course_id } = req.params;
-    console.log(course_id);
+    const student_id = req.user.id; // Assuming `req.user` contains student details after authentication
 
-    // Validate course_id
+    console.log(`Course ID: ${course_id}, Student ID: ${student_id}`);
+
+    // Validate inputs
     if (!course_id) {
       return res.status(400).json({ message: "Course ID is required!" });
     }
 
-    // Fetch lectures for the given course_id
+    // Fetch the student from DB to check enrollment
+    const student = await Student.findById(student_id);
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found!" });
+    }
+
+    // Check if student is enrolled in the course
+    if (!student.enrolled_courses.includes(course_id)) {
+      return res
+        .status(403)
+        .json({ message: "You are not enrolled in this course!" });
+    }
+
+    // Fetch lectures for the enrolled course
     const lectures = await Lecture.find({ course_id });
 
     // If no lectures are found
@@ -113,6 +130,7 @@ const getAllLectures = async (req, res) => {
       .json({ message: "Internal Server Error", error: error.message });
   }
 };
+
 
 module.exports = {
   addCourse,

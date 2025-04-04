@@ -11,7 +11,7 @@ const {
 const router = express.Router();
 
 const { verifyAdmin } = require("../middlewares/authMiddleware");
-1
+
 // Routes
 router.post("/add", verifyAdmin, addCourse);
 router.get("/", getAllCourses);
