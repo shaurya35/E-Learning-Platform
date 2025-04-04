@@ -3,32 +3,32 @@ const bcrypt = require("bcrypt");
 const Faculty = require("../models/facultyModel");
 
 const generateFacultyAccessToken = (student) => {
-    return jwt.sign(
-      {
-        faculty_id: Faculty._id,
-        faculty_uid: Faculty.faculty_uid,
-        role: "faculty",
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "2h" }
-    );
-  };
-  
-  const generateFacultyRefreshToken = (faculty) => {
-    return jwt.sign(
-      {
-        faculty_id: Faculty._id,
-        faculty_uid: Faculty.faculty_uid,
-        role: "faculty",
-      },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "30d" }
-    );
-  };
+  return jwt.sign(
+    {
+      faculty_id: Faculty._id,
+      faculty_uid: Faculty.faculty_uid,
+      role: "faculty",
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "2h" }
+  );
+};
+
+const generateFacultyRefreshToken = (faculty) => {
+  return jwt.sign(
+    {
+      faculty_id: Faculty._id,
+      faculty_uid: Faculty.faculty_uid,
+      role: "faculty",
+    },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: "30d" }
+  );
+};
+
 const facultySignIn = async (req, res) => {
   try {
     const { faculty_uid, faculty_password } = req.body;
-
 
     const faculty = await Faculty.findOne({ faculty_uid });
     if (!faculty) {
@@ -36,7 +36,10 @@ const facultySignIn = async (req, res) => {
     }
 
     // 🔐 Compare password
-    const isMatch = await bcrypt.compare(faculty_password, faculty.faculty_password);
+    const isMatch = await bcrypt.compare(
+      faculty_password,
+      faculty.faculty_password
+    );
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid UID or password!" });
     }
@@ -63,10 +66,11 @@ const facultySignIn = async (req, res) => {
         role: "faculty",
       },
     });
-
   } catch (error) {
     console.error("Faculty Signin Error:", error);
-    res.status(500).json({ message: "Error signing in faculty!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error signing in faculty!", error: error.message });
   }
 };
 

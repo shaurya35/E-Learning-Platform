@@ -29,9 +29,12 @@ const addCourse = async (req, res) => {
 
 const getAllCourses = async (req, res) => {
   try {
-    const courses = await Course.find().populate(
-      "course_lecture course_assignment course_quiz course_notification"
-    );
+    const courses = await Course.find()
+      .select(
+        "-course_lecture -course_assignment -course_quiz -course_notification"
+      ) // Exclude unwanted fields
+      .sort({ createdAt: -1 }); // Sort by latest created courses first
+
     res.status(200).json(courses);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -40,9 +43,10 @@ const getAllCourses = async (req, res) => {
 
 const getCourseById = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id).populate(
-      "course_lecture course_assignment course_quiz course_notification"
-    );
+    const course = await Course.findById(req.params.id).select(
+      "-course_lecture -course_assignment -course_quiz -course_notification"
+    ); // Exclude unwanted fields
+
     if (!course) return res.status(404).json({ message: "Course not found!" });
 
     res.status(200).json(course);
