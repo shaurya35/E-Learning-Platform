@@ -44,7 +44,23 @@ const refreshAccessToken = (req, res) => {
     res.status(401).json({ message: "Invalid or expired refresh token" });
   }
 };
+const logout = (req, res) => {
+  try {
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Must be true in production
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Must match how the cookie was set
+      path: "/", // Ensure the cookie is removed from the entire site
+      // Optional: include the domain if you set it when creating the cookie:
+      // domain: process.env.NODE_ENV === "production" ? "your-backend-domain.com" : undefined,
+    });
 
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.error("Logout Error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 module.exports = {
-  refreshAccessToken,
+  refreshAccessToken,logout
 };
