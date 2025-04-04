@@ -24,6 +24,10 @@ app.use(
   })
 );
 
+const adminRoutes = require("./routes/adminRoutes")
+app.use("/api/admin", adminRoutes);
+
+
 // base route
 app.get("/", (req, res) => {
   res.json({ message: "OK" });
