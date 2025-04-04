@@ -5,7 +5,7 @@ const {
   getStudentProfile,
   enrollInCourse,
   unenrollFromCourse,
-  getEnrolledCourses
+  getEnrolledCourses,studentRefreshAccessToken,
 } = require("../controllers/studentController");
 const { verifyStudent } = require("../middlewares/authMiddleware");
 
@@ -14,5 +14,6 @@ router.get("/profile", verifyStudent, getStudentProfile);
 router.post("/enroll", verifyStudent, enrollInCourse);
 router.post("/unenroll", verifyStudent, unenrollFromCourse);
 router.get("/courses", verifyStudent, getEnrolledCourses);
+router.post("/refresh",studentRefreshAccessToken);
 
 module.exports = router;
